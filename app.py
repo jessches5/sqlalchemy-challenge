@@ -76,9 +76,10 @@ def stations():
 
     session.close()
 
-    # Create a dictionary from the row data and append to a list of all_passengers
+    # Create a list of all_stations
     all_stations = []
     for station in results:
+        all_stations.append(station)
         
         return jsonify(all_stations)
 
