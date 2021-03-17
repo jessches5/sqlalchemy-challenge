@@ -72,14 +72,17 @@ def stations():
 
     """Return a list of stations """
     # Query all stations
-    results = session.query(ST.station).all()
+    results = session.query(ST.station, ST.name).all()
 
     session.close()
 
     # Create a list of all_stations
     all_stations = []
-    for station in results:
-        all_stations.append(station)
+    for station, name in results:
+        st_dict = {}
+        st_dict["station"] = station
+        st_dict["name"] = name
+        all_stations.append(st_dict)
         
         return jsonify(all_stations)
 
