@@ -78,7 +78,7 @@ def stations():
 
     """Return a list of stations """
     # Query all stations
-    results = session.query(MS.station).all()
+    results = session.query(ST.station).group_by(ST.id).all()
 
     session.close()
 
@@ -117,9 +117,31 @@ def start():
     # Create our session (link) from Python to the DB
     session = Session(engine)
 
-    """Return a list of stations """
-    # Query TMIN, TAVG, and TMAX for all dates greater than and equal to the start date.
+    """Return a list of agg data"""
+    # Query TMIN, TAVG, and TMAX for all dates greater than and equal to the start date
     results = session.query(func.min(MS.tobs), func.max(MS.tobs), func.avg(MS.tobs)).filter(MS.date >= year_ago).all()
+
+    session.close()
+
+    # Create a list of min, max, and avg
+    agg_data = []
+    for result in results:
+        agg_dict = {}
+        agg_dict["TMIN"] = result[0]
+        agg_dict["TMAX"] = result[1]
+        agg_dict["TAVG"] = result[2]
+        agg_data.append(agg_dict)
+        
+        return jsonify(agg_data)
+
+@app.route("/api/v1.0/start_end")
+def start_end():
+    # Create our session (link) from Python to the DB
+    session = Session(engine)
+    today = dt.datetime(2016, 8, 23)
+    """Return a list of agg data"""
+    # Query TMIN, TAVG, and TMAX for all dates between dates
+    results = session.query(func.min(MS.tobs), func.max(MS.tobs), func.avg(MS.tobs)).filter(MS.date >= year_ago).filter(MS.date <= today).all()
 
     session.close()
 
