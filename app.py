@@ -62,10 +62,10 @@ def precipitation():
 
 # Create a dictionary from the row data and append to a list 
     all_prcp = []
-    for date, precipitation in results:
+    for result in results:
         prcp_dict = {}
-        prcp_dict["date"] = date
-        prcp_dict["prcp"] = precipitation
+        prcp_dict["date"] = result[0]
+        prcp_dict["prcp"] = result[1]
         all_prcp.append(prcp_dict)
 
     return jsonify(all_prcp)
@@ -84,9 +84,9 @@ def stations():
 
     # Create a list of all_stations
     all_stations = []
-    for station in results:
+    for result in results:
         st_dict = {}
-        st_dict["station"] = station
+        st_dict["station"] = result[0]
         all_stations.append(st_dict)
         
         return jsonify(all_stations)
@@ -104,13 +104,35 @@ def tobs():
 
     # Create a list of all_stations
     active_station = []
-    for date, tobs in results:
+    for result in results:
         active_dict = {}
-        active_dict["date"] = date
-        active_dict["tobs"] = tobs
+        active_dict["date"] = result[0]
+        active_dict["tobs"] = result[1]
         active_station.append(active_dict)
         
         return jsonify(active_station)
+
+@app.route("/api/v1.0/start")
+def start():
+    # Create our session (link) from Python to the DB
+    session = Session(engine)
+
+    """Return a list of stations """
+    # Query TMIN, TAVG, and TMAX for all dates greater than and equal to the start date.
+    results = session.query(func.min(MS.tobs), func.max(MS.tobs), func.avg(MS.tobs)).filter(MS.date >= year_ago).all()
+
+    session.close()
+
+    # Create a list of min, max, and avg
+    agg_data = []
+    for result in results:
+        agg_dict = {}
+        agg_dict["TMIN"] = result[0]
+        agg_dict["TMAX"] = result[1]
+        agg_dict["TAVG"] = result[2]
+        agg_data.append(agg_dict)
+        
+        return jsonify(agg_data)
 
 if __name__ == '__main__':
     app.run(debug=True)
