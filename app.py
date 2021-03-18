@@ -4,7 +4,7 @@ import sqlalchemy
 from sqlalchemy.ext.automap import automap_base
 from sqlalchemy.orm import Session
 from sqlalchemy import create_engine, func
-
+import datetime as dt
 from flask import Flask, jsonify
 
 
@@ -22,6 +22,10 @@ Base.prepare(engine, reflect=True)
 MS = Base.classes.measurement
 ST = Base.classes.station
 
+session = Session(engine)
+session.query(MS.date).order_by(MS.date.desc()).first()
+year_ago = dt.date(2017, 8, 23) - dt.timedelta(days=365)
+session.close()
 #################################################
 # Flask Setup
 #################################################
@@ -94,7 +98,7 @@ def tobs():
 
     """Return a list of stations """
     # Query all dates and temperature observations of the most active station for the last year of data
-    results = session.query(MS.date, MS.tobs).filter(MS.station == 'USC00519281').all()
+    results = session.query(MS.date, MS.tobs).filter(MS.station == 'USC00519281').filter(MS.date >= year_ago).all()
 
     session.close()
 
