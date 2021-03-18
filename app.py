@@ -39,7 +39,9 @@ def home():
         f"Available Routes:<br/>"
         f"/api/v1.0/precipitation<br/>"
         f"/api/v1.0/stations<br/>"
-        f"/api/v1.0/tobs"
+        f"/api/v1.0/tobs<br/>"
+        f"/api/v1.0/start<br/>"
+        f"/api/v1.0/start_end"
     )
 
 
@@ -72,20 +74,39 @@ def stations():
 
     """Return a list of stations """
     # Query all stations
-    results = session.query(ST.station, ST.name).all()
+    results = session.query(MS.station).all()
 
     session.close()
 
     # Create a list of all_stations
     all_stations = []
-    for station, name in results:
+    for station in results:
         st_dict = {}
         st_dict["station"] = station
-        st_dict["name"] = name
         all_stations.append(st_dict)
         
         return jsonify(all_stations)
 
+@app.route("/api/v1.0/tobs")
+def tobs():
+    # Create our session (link) from Python to the DB
+    session = Session(engine)
+
+    """Return a list of stations """
+    # Query all dates and temperature observations of the most active station for the last year of data
+    results = session.query(MS.date, MS.tobs).filter(MS.station == 'USC00519281').all()
+
+    session.close()
+
+    # Create a list of all_stations
+    active_station = []
+    for date, tobs in results:
+        active_dict = {}
+        active_dict["date"] = date
+        active_dict["tobs"] = tobs
+        active_station.append(active_dict)
+        
+        return jsonify(active_station)
 
 if __name__ == '__main__':
     app.run(debug=True)
